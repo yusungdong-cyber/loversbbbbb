@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP AI Match — 韓国式AI運命マッチング</title>
+<style>
+/* === Base / Variables === */
+:root {
+	--lp-primary: #e91e63;
+	--lp-primary-light: #f8bbd0;
+	--lp-primary-dark: #c2185b;
+	--lp-accent: #9c27b0;
+	--lp-accent-light: #e1bee7;
+	--lp-bg: #fefefe;
+	--lp-bg-soft: #fdf2f8;
+	--lp-text: #333;
+	--lp-text-light: #888;
+	--lp-border: #f0e6ed;
+	--lp-radius: 12px;
+	--lp-shadow: 0 2px 20px rgba(233, 30, 99, 0.08);
+	--lp-font: "Hiragino Kaku Gothic Pro", "Yu Gothic", "Meiryo", -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+	font-family: var(--lp-font);
+	background: var(--lp-bg);
+	color: var(--lp-text);
+	line-height: 1.6;
+}
+a { color: var(--lp-primary); text-decoration: none; }
+
+/* === Navigation === */
+.lp-nav {
+	position: sticky; top: 0; z-index: 100;
+	background: rgba(255,255,255,0.95);
+	backdrop-filter: blur(10px);
+	border-bottom: 1px solid var(--lp-border);
+	padding: 12px 20px;
+	display: flex; justify-content: center; gap: 24px;
+}
+.lp-nav a {
+	font-size: 14px; font-weight: 600;
+	color: var(--lp-text-light);
+	transition: color 0.3s;
+}
+.lp-nav a:hover { color: var(--lp-primary); }
+
+/* === Hero === */
+.lp-hero {
+	text-align: center;
+	padding: 80px 20px 60px;
+	background: linear-gradient(135deg, var(--lp-bg-soft) 0%, #f3e5f5 50%, var(--lp-bg-soft) 100%);
+}
+.lp-hero__badge {
+	display: inline-block;
+	background: var(--lp-primary);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 4px 16px;
+	border-radius: 50px;
+	margin-bottom: 20px;
+}
+.lp-hero__title {
+	font-size: 36px;
+	color: var(--lp-primary);
+	margin-bottom: 12px;
+	line-height: 1.3;
+}
+.lp-hero__subtitle {
+	font-size: 16px;
+	color: var(--lp-text-light);
+	margin-bottom: 32px;
+	max-width: 500px;
+	margin-left: auto; margin-right: auto;
+}
+.lp-hero__features {
+	display: flex;
+	justify-content: center;
+	gap: 32px;
+	flex-wrap: wrap;
+	margin-bottom: 32px;
+}
+.lp-hero__feature {
+	font-size: 14px;
+	color: var(--lp-text);
+}
+.lp-hero__feature span { font-size: 24px; display: block; margin-bottom: 4px; }
+
+/* === Buttons === */
+.lp-btn {
+	display: inline-flex; align-items: center; justify-content: center;
+	padding: 12px 28px; border: none; border-radius: 50px;
+	font-size: 15px; font-weight: 600; cursor: pointer;
+	transition: all 0.3s ease; text-decoration: none; line-height: 1.4;
+	font-family: var(--lp-font);
+}
+.lp-btn--primary { background: var(--lp-primary); color: #fff; }
+.lp-btn--primary:hover { background: var(--lp-primary-dark); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(233,30,99,0.3); }
+.lp-btn--accent { background: linear-gradient(135deg, var(--lp-primary), var(--lp-accent)); color: #fff; }
+.lp-btn--accent:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(156,39,176,0.3); }
+.lp-btn--secondary { background: #fff; color: var(--lp-primary); border: 2px solid var(--lp-primary-light); }
+.lp-btn--secondary:hover { background: var(--lp-bg-soft); }
+.lp-btn--small { padding: 6px 16px; font-size: 13px; }
+.lp-btn--danger { background: #ff5252; color: #fff; }
+
+/* === Section Divider === */
+.lp-section { padding: 60px 20px; }
+.lp-section--alt { background: var(--lp-bg-soft); }
+.lp-section__divider {
+	text-align: center;
+	font-size: 12px;
+	color: var(--lp-text-light);
+	margin: 0;
+	padding: 20px;
+	letter-spacing: 4px;
+}
+
+/* === Forms === */
+.lp-input {
+	width: 100%; padding: 12px 16px;
+	border: 2px solid var(--lp-border); border-radius: var(--lp-radius);
+	font-size: 15px; font-family: var(--lp-font);
+	transition: border-color 0.3s; background: #fff;
+}
+.lp-input:focus { outline: none; border-color: var(--lp-primary-light); }
+.lp-label { display: block; font-size: 14px; font-weight: 600; color: var(--lp-text); margin-bottom: 6px; }
+.lp-form-group { margin-bottom: 20px; }
+.lp-radio-group { display: flex; gap: 12px; }
+.lp-radio, .lp-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+
+/* === Horoscope === */
+.lp-horoscope { max-width: 480px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+.lp-horoscope__title { font-size: 24px; color: var(--lp-primary); margin-bottom: 8px; }
+.lp-horoscope__subtitle { color: var(--lp-text-light); font-size: 14px; margin-bottom: 32px; }
+.lp-horoscope__form { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 32px; }
+.lp-horoscope__form .lp-form-group { width: 100%; max-width: 280px; margin-bottom: 0; }
+.lp-horoscope__result { animation: lp-fadeIn 0.6s ease; }
+.lp-horoscope__sign { margin-bottom: 20px; }
+.lp-horoscope__symbol { font-size: 48px; display: block; margin-bottom: 4px; }
+.lp-horoscope__sign-name { font-size: 18px; font-weight: 600; color: var(--lp-accent); }
+.lp-horoscope__score-circle {
+	width: 120px; height: 120px; border-radius: 50%;
+	background: linear-gradient(135deg, var(--lp-primary-light), var(--lp-accent-light));
+	display: flex; flex-direction: column; align-items: center; justify-content: center;
+	margin: 0 auto 20px;
+}
+.lp-horoscope__score-number { font-size: 36px; font-weight: 700; color: var(--lp-primary); }
+.lp-horoscope__score-label { font-size: 11px; color: var(--lp-accent); }
+.lp-horoscope__fortune { font-size: 16px; line-height: 1.8; color: var(--lp-text); margin-bottom: 24px; padding: 0 10px; }
+.lp-horoscope__extras { display: flex; justify-content: center; gap: 32px; margin-bottom: 32px; }
+.lp-horoscope__extra-label { display: block; font-size: 11px; color: var(--lp-text-light); }
+.lp-horoscope__extra-value { font-size: 14px; font-weight: 600; color: var(--lp-accent); }
+.lp-horoscope__cta { background: var(--lp-bg-soft); padding: 24px; border-radius: var(--lp-radius); }
+.lp-horoscope__cta-text { font-size: 15px; color: var(--lp-text); margin-bottom: 12px; }
+
+/* === Tarot === */
+.lp-tarot { max-width: 600px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+.lp-tarot__title { font-size: 24px; color: var(--lp-accent); margin-bottom: 8px; }
+.lp-tarot__subtitle { color: var(--lp-text-light); font-size: 14px; margin-bottom: 32px; }
+.lp-tarot__deck { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+.lp-tarot__card-back {
+	width: 100px; height: 150px; border-radius: 10px;
+	background: linear-gradient(135deg, var(--lp-accent), var(--lp-primary));
+	cursor: pointer; transition: transform 0.3s;
+	display: flex; align-items: center; justify-content: center;
+	box-shadow: var(--lp-shadow);
+}
+.lp-tarot__card-back::after { content: "?"; font-size: 32px; color: rgba(255,255,255,0.5); }
+.lp-tarot__card-back:hover { transform: translateY(-4px) rotate(-2deg); }
+.lp-tarot__cards { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 32px; }
+.lp-tarot__card {
+	width: 160px; background: #fff; border-radius: var(--lp-radius);
+	box-shadow: var(--lp-shadow); overflow: hidden; animation: lp-fadeIn 0.6s ease;
+}
+.lp-tarot__card-image {
+	width: 100%; height: 120px;
+	background: linear-gradient(135deg, var(--lp-primary-light), var(--lp-accent-light));
+	display: flex; align-items: center; justify-content: center; font-size: 40px;
+}
+.lp-tarot__card--reversed .lp-tarot__card-image { transform: rotate(180deg); }
+.lp-tarot__card-body { padding: 12px; }
+.lp-tarot__card-position { font-size: 11px; color: var(--lp-text-light); text-transform: uppercase; letter-spacing: 1px; }
+.lp-tarot__card-name { font-size: 15px; font-weight: 600; color: var(--lp-accent); margin: 4px 0 8px; }
+.lp-tarot__card-reversed-label { font-size: 11px; color: var(--lp-primary); font-weight: 600; }
+.lp-tarot__card-meaning { font-size: 13px; line-height: 1.6; color: var(--lp-text); }
+.lp-tarot__cta { background: var(--lp-bg-soft); padding: 24px; border-radius: var(--lp-radius); }
+.lp-tarot__cta-text { margin-bottom: 12px; }
+
+/* === Profile Form === */
+.lp-profile-form { max-width: 500px; margin: 0 auto; padding: 40px 20px; }
+.lp-profile-form__title { text-align: center; color: var(--lp-primary); font-size: 24px; margin-bottom: 8px; }
+.lp-profile-form__subtitle { text-align: center; color: var(--lp-text-light); font-size: 14px; margin-bottom: 32px; }
+.lp-form__step-title { font-size: 18px; color: var(--lp-accent); margin-bottom: 20px; }
+.lp-option-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lp-option { display: block; cursor: pointer; }
+.lp-option input { display: none; }
+.lp-option__text {
+	display: block; padding: 12px 16px;
+	border: 2px solid var(--lp-border); border-radius: var(--lp-radius);
+	font-size: 13px; text-align: center; transition: all 0.3s;
+}
+.lp-option input:checked + .lp-option__text {
+	border-color: var(--lp-primary); background: var(--lp-bg-soft); color: var(--lp-primary); font-weight: 600;
+}
+.lp-value-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.lp-value-tag { cursor: pointer; }
+.lp-value-tag input { display: none; }
+.lp-value-tag__text {
+	display: inline-block; padding: 8px 18px;
+	border: 2px solid var(--lp-border); border-radius: 50px; font-size: 13px; transition: all 0.3s;
+}
+.lp-value-tag input:checked + .lp-value-tag__text {
+	border-color: var(--lp-accent); background: var(--lp-accent); color: #fff;
+}
+.lp-form__hint { color: var(--lp-text-light); font-size: 13px; margin-bottom: 16px; }
+.lp-form__nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; }
+.lp-form__progress { height: 4px; background: var(--lp-border); border-radius: 2px; margin-top: 20px; overflow: hidden; }
+.lp-form__progress-bar { height: 100%; background: linear-gradient(to right, var(--lp-primary), var(--lp-accent)); border-radius: 2px; transition: width 0.4s ease; }
+
+/* === Pricing === */
+.lp-pricing { max-width: 900px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+.lp-pricing__title { font-size: 28px; color: var(--lp-primary); margin-bottom: 8px; }
+.lp-pricing__subtitle { color: var(--lp-text-light); margin-bottom: 40px; }
+.lp-pricing__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; align-items: start; }
+.lp-pricing__card {
+	background: #fff; border-radius: 16px; padding: 32px 24px;
+	box-shadow: var(--lp-shadow); border: 2px solid transparent;
+	position: relative; transition: transform 0.3s, box-shadow 0.3s;
+}
+.lp-pricing__card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(233,30,99,0.12); }
+.lp-pricing__card--popular { border-color: var(--lp-primary); transform: scale(1.02); }
+.lp-pricing__card--popular:hover { transform: scale(1.02) translateY(-4px); }
+.lp-pricing__badge {
+	position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+	background: var(--lp-primary); color: #fff; padding: 4px 20px; border-radius: 50px; font-size: 12px; font-weight: 600;
+}
+.lp-pricing__card-header h3 { font-size: 18px; color: var(--lp-accent); margin-bottom: 16px; }
+.lp-pricing__price { margin-bottom: 24px; }
+.lp-pricing__currency { font-size: 18px; color: var(--lp-text); vertical-align: top; }
+.lp-pricing__amount { font-size: 42px; font-weight: 700; color: var(--lp-primary); }
+.lp-pricing__features { list-style: none; padding: 0; margin: 0 0 28px; text-align: left; }
+.lp-pricing__features li { padding: 8px 0; font-size: 14px; color: var(--lp-text); border-bottom: 1px solid var(--lp-border); }
+.lp-pricing__features li::before { content: "\2713 "; color: var(--lp-primary); font-weight: bold; margin-right: 8px; }
+.lp-pricing__btn { width: 100%; }
+
+/* === Demo Report === */
+.lp-result { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+.lp-result__title { text-align: center; color: var(--lp-primary); font-size: 24px; margin-bottom: 32px; }
+.lp-result__content { background: #fff; padding: 32px; border-radius: 16px; box-shadow: var(--lp-shadow); margin-bottom: 24px; }
+.lp-report__total-score { text-align: center; margin: 20px 0; }
+.lp-report__score-number { font-size: 64px; font-weight: 700; color: var(--lp-primary); }
+.lp-report__score-unit { font-size: 20px; color: var(--lp-text-light); }
+.lp-report__score-label { text-align: center; color: var(--lp-accent); font-size: 16px; margin-bottom: 28px; }
+.lp-report__section-title { color: var(--lp-accent); font-size: 17px; margin-top: 28px; border-bottom: 1px solid var(--lp-border); padding-bottom: 6px; margin-bottom: 12px; }
+.lp-report__score-bar { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+.lp-report__bar-label { width: 90px; font-size: 13px; color: var(--lp-text-light); flex-shrink: 0; }
+.lp-report__bar { height: 16px; background: linear-gradient(to right, var(--lp-primary-light), var(--lp-primary)); border-radius: 8px; }
+.lp-report__bar-value { width: 50px; text-align: right; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+.lp-report__text { font-size: 14px; line-height: 1.8; color: var(--lp-text); margin: 12px 0; }
+
+/* === Chat Demo === */
+.lp-chat { max-width: 600px; margin: 0 auto; padding: 20px; }
+.lp-chat__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.lp-chat__title { font-size: 18px; color: var(--lp-text); }
+.lp-chat__actions { display: flex; gap: 8px; }
+.lp-chat__messages { height: 320px; overflow-y: auto; background: var(--lp-bg-soft); border-radius: var(--lp-radius); padding: 16px; margin-bottom: 12px; }
+.lp-chat__message { margin-bottom: 12px; display: flex; flex-direction: column; }
+.lp-chat__message--mine { align-items: flex-end; }
+.lp-chat__message--theirs { align-items: flex-start; }
+.lp-chat__bubble { max-width: 75%; padding: 10px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+.lp-chat__message--mine .lp-chat__bubble { background: var(--lp-primary); color: #fff; border-bottom-right-radius: 4px; }
+.lp-chat__message--theirs .lp-chat__bubble { background: #fff; color: var(--lp-text); border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.lp-chat__message-time { font-size: 11px; color: var(--lp-text-light); margin-top: 4px; }
+.lp-chat__input-area { display: flex; gap: 8px; align-items: flex-end; }
+.lp-chat__input { flex: 1; resize: none; padding: 12px 16px; border: 2px solid var(--lp-border); border-radius: var(--lp-radius); font-size: 15px; font-family: var(--lp-font); }
+
+/* === Footer === */
+.lp-footer { text-align: center; padding: 40px 20px; color: var(--lp-text-light); font-size: 13px; border-top: 1px solid var(--lp-border); }
+
+/* === Animations === */
+@keyframes lp-fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === Responsive === */
+@media (max-width: 600px) {
+	.lp-hero__title { font-size: 26px; }
+	.lp-option-group { grid-template-columns: 1fr; }
+	.lp-pricing__cards { grid-template-columns: 1fr; }
+	.lp-pricing__card--popular { transform: none; }
+	.lp-tarot__deck { gap: 8px; }
+	.lp-tarot__card-back { width: 80px; height: 120px; }
+	.lp-tarot__cards { gap: 10px; }
+	.lp-tarot__card { width: 140px; }
+	.lp-nav { gap: 12px; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="lp-nav">
+	<a href="#horoscope">恋愛運</a>
+	<a href="#tarot">タロット</a>
+	<a href="#profile">プロフィール</a>
+	<a href="#pricing">料金プラン</a>
+	<a href="#report">レポート例</a>
+	<a href="#chat">チャット</a>
+</nav>
+
+<!-- Hero -->
+<section class="lp-hero">
+	<span class="lp-hero__badge">韓国式AI運命マッチング</span>
+	<h1 class="lp-hero__title">四柱推命 × AI分析で<br>運命の相手を見つける</h1>
+	<p class="lp-hero__subtitle">韓国伝統の四柱推命と最新AI技術を組み合わせた、新しい形の恋愛マッチングサービス</p>
+	<div class="lp-hero__features">
+		<div class="lp-hero__feature"><span>🔮</span>四柱推命分析</div>
+		<div class="lp-hero__feature"><span>🤖</span>AI相性診断</div>
+		<div class="lp-hero__feature"><span>💌</span>安心チャット</div>
+		<div class="lp-hero__feature"><span>📊</span>詳細レポート</div>
+	</div>
+	<a href="#horoscope" class="lp-btn lp-btn--accent">無料で恋愛運を占う</a>
+</section>
+
+<!-- ===== Horoscope ===== -->
+<section class="lp-section" id="horoscope">
+<div class="lp-horoscope">
+	<h2 class="lp-horoscope__title">今日の恋愛運</h2>
+	<p class="lp-horoscope__subtitle">生年月日を入力して、今日の恋愛運をチェック</p>
+
+	<div class="lp-horoscope__form" id="lp-horoscope-form">
+		<div class="lp-form-group">
+			<label for="lp-horoscope-date" class="lp-label">生年月日</label>
+			<input type="date" id="lp-horoscope-date" class="lp-input" required>
+		</div>
+		<button type="button" id="lp-horoscope-submit" class="lp-btn lp-btn--primary">占う</button>
+	</div>
+
+	<div class="lp-horoscope__result" id="lp-horoscope-result" style="display:none">
+		<div class="lp-horoscope__sign">
+			<span class="lp-horoscope__symbol" id="lp-horoscope-symbol"></span>
+			<span class="lp-horoscope__sign-name" id="lp-horoscope-sign"></span>
+		</div>
+		<div class="lp-horoscope__score-circle">
+			<span class="lp-horoscope__score-number" id="lp-horoscope-score"></span>
+			<span class="lp-horoscope__score-label">恋愛運</span>
+		</div>
+		<p class="lp-horoscope__fortune" id="lp-horoscope-fortune"></p>
+		<div class="lp-horoscope__extras">
+			<div class="lp-horoscope__extra">
+				<span class="lp-horoscope__extra-label">ラッキーカラー</span>
+				<span class="lp-horoscope__extra-value" id="lp-horoscope-color"></span>
+			</div>
+			<div class="lp-horoscope__extra">
+				<span class="lp-horoscope__extra-label">ラッキータイム</span>
+				<span class="lp-horoscope__extra-value" id="lp-horoscope-time"></span>
+			</div>
+		</div>
+		<div class="lp-horoscope__cta">
+			<p class="lp-horoscope__cta-text">今日あなたと相性が高い人がいます</p>
+			<a href="#pricing" class="lp-btn lp-btn--accent">運命の相手を見つける（1,000円〜）</a>
+		</div>
+	</div>
+</div>
+</section>
+
+<div class="lp-section__divider">✦ ✦ ✦</div>
+
+<!-- ===== Tarot ===== -->
+<section class="lp-section lp-section--alt" id="tarot">
+<div class="lp-tarot">
+	<h2 class="lp-tarot__title">タロット恋愛占い</h2>
+	<p class="lp-tarot__subtitle">3枚のカードがあなたの恋愛の過去・現在・未来を教えてくれます</p>
+
+	<div id="lp-tarot-draw-area">
+		<div class="lp-tarot__deck">
+			<div class="lp-tarot__card-back"></div>
+			<div class="lp-tarot__card-back"></div>
+			<div class="lp-tarot__card-back"></div>
+		</div>
+		<button type="button" id="lp-tarot-draw" class="lp-btn lp-btn--primary" style="margin-top:16px">カードを引く</button>
+	</div>
+
+	<div id="lp-tarot-result" style="display:none">
+		<div class="lp-tarot__cards" id="lp-tarot-cards"></div>
+		<div class="lp-tarot__cta">
+			<p class="lp-tarot__cta-text">カードが示す運命の相手を見つけませんか？</p>
+			<a href="#pricing" class="lp-btn lp-btn--accent">AI運命マッチングを試す</a>
+		</div>
+	</div>
+</div>
+</section>
+
+<div class="lp-section__divider">✦ ✦ ✦</div>
+
+<!-- ===== Profile Form ===== -->
+<section class="lp-section" id="profile">
+<div class="lp-profile-form">
+	<h2 class="lp-profile-form__title">プロフィール作成</h2>
+	<p class="lp-profile-form__subtitle">あなたのことを教えてください。AIが最適な相手を見つけます。</p>
+
+	<form id="lp-profile-form-el">
+		<!-- Step 1: Basic -->
+		<div class="lp-form__step" data-step="1">
+			<h3 class="lp-form__step-title">基本情報</h3>
+			<div class="lp-form-group">
+				<label for="lp-nickname" class="lp-label">ニックネーム</label>
+				<input type="text" id="lp-nickname" class="lp-input" placeholder="例: さくら" maxlength="20">
+			</div>
+			<div class="lp-form-group">
+				<label for="lp-birthdate" class="lp-label">生年月日</label>
+				<input type="date" id="lp-birthdate" class="lp-input">
+			</div>
+			<div class="lp-form-group">
+				<label class="lp-label">性別</label>
+				<div class="lp-radio-group">
+					<label class="lp-radio"><input type="radio" name="gender" value="female" checked> <span>女性</span></label>
+					<label class="lp-radio"><input type="radio" name="gender" value="male"> <span>男性</span></label>
+				</div>
+			</div>
+		</div>
+
+		<!-- Step 2: Personality -->
+		<div class="lp-form__step" data-step="2" style="display:none">
+			<h3 class="lp-form__step-title">性格診断</h3>
+
+			<div class="lp-form-group">
+				<label class="lp-label">休日はどう過ごしたいですか？</label>
+				<div class="lp-option-group">
+					<label class="lp-option"><input type="radio" name="q_1" value="a"><span class="lp-option__text">家でゆっくり過ごしたい</span></label>
+					<label class="lp-option"><input type="radio" name="q_1" value="b"><span class="lp-option__text">友達と外出したい</span></label>
+					<label class="lp-option"><input type="radio" name="q_1" value="c"><span class="lp-option__text">二人でカフェに行きたい</span></label>
+					<label class="lp-option"><input type="radio" name="q_1" value="d"><span class="lp-option__text">新しい場所を探検したい</span></label>
+				</div>
+			</div>
+
+			<div class="lp-form-group">
+				<label class="lp-label">愛情表現で一番大切なのは？</label>
+				<div class="lp-option-group">
+					<label class="lp-option"><input type="radio" name="q_2" value="a"><span class="lp-option__text">言葉で伝える</span></label>
+					<label class="lp-option"><input type="radio" name="q_2" value="b"><span class="lp-option__text">一緒に時間を過ごす</span></label>
+					<label class="lp-option"><input type="radio" name="q_2" value="c"><span class="lp-option__text">プレゼントやサプライズ</span></label>
+					<label class="lp-option"><input type="radio" name="q_2" value="d"><span class="lp-option__text">スキンシップ</span></label>
+				</div>
+			</div>
+
+			<div class="lp-form-group">
+				<label class="lp-label">理想のデートは？</label>
+				<div class="lp-option-group">
+					<label class="lp-option"><input type="radio" name="q_3" value="a"><span class="lp-option__text">おしゃれなレストラン</span></label>
+					<label class="lp-option"><input type="radio" name="q_3" value="b"><span class="lp-option__text">自然の中でピクニック</span></label>
+					<label class="lp-option"><input type="radio" name="q_3" value="c"><span class="lp-option__text">映画やアート鑑賞</span></label>
+					<label class="lp-option"><input type="radio" name="q_3" value="d"><span class="lp-option__text">おうちでまったり</span></label>
+				</div>
+			</div>
+		</div>
+
+		<!-- Step 3: Values -->
+		<div class="lp-form__step" data-step="3" style="display:none">
+			<h3 class="lp-form__step-title">大切にしている価値観</h3>
+			<p class="lp-form__hint">3つまで選んでください</p>
+			<div class="lp-value-tags">
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="family"><span class="lp-value-tag__text">家族を大切に</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="career"><span class="lp-value-tag__text">キャリア重視</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="adventure"><span class="lp-value-tag__text">冒険好き</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="stability"><span class="lp-value-tag__text">安定志向</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="creativity"><span class="lp-value-tag__text">創造性</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="health"><span class="lp-value-tag__text">健康第一</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="kindness"><span class="lp-value-tag__text">思いやり</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="humor"><span class="lp-value-tag__text">ユーモア</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="honesty"><span class="lp-value-tag__text">正直さ</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="ambition"><span class="lp-value-tag__text">向上心</span></label>
+				<label class="lp-value-tag"><input type="checkbox" name="values[]" value="loyalty"><span class="lp-value-tag__text">忠誠心</span></label>
+			</div>
+		</div>
+
+		<!-- Step 4: Confirm -->
+		<div class="lp-form__step" data-step="4" style="display:none">
+			<h3 class="lp-form__step-title">確認</h3>
+			<div class="lp-form-group">
+				<label class="lp-checkbox"><input type="checkbox" id="lp-age-verify"> <span>18歳以上であることを確認します</span></label>
+			</div>
+			<div class="lp-form-group">
+				<label class="lp-checkbox"><input type="checkbox" id="lp-terms"> <span><a href="#">利用規約</a>と<a href="#">プライバシーポリシー</a>に同意します</span></label>
+			</div>
+		</div>
+
+		<!-- Nav -->
+		<div class="lp-form__nav">
+			<button type="button" id="lp-form-prev" class="lp-btn lp-btn--secondary" style="display:none">戻る</button>
+			<button type="button" id="lp-form-next" class="lp-btn lp-btn--primary">次へ</button>
+			<button type="submit" id="lp-form-submit" class="lp-btn lp-btn--accent" style="display:none">プロフィールを保存</button>
+		</div>
+		<div class="lp-form__progress">
+			<div class="lp-form__progress-bar" id="lp-form-progress" style="width:25%"></div>
+		</div>
+	</form>
+</div>
+</section>
+
+<div class="lp-section__divider">✦ ✦ ✦</div>
+
+<!-- ===== Pricing ===== -->
+<section class="lp-section lp-section--alt" id="pricing">
+<div class="lp-pricing">
+	<h2 class="lp-pricing__title">韓国式AI運命マッチング</h2>
+	<p class="lp-pricing__subtitle">四柱推命×AI分析で、運命の相手を見つけましょう</p>
+
+	<div class="lp-pricing__cards">
+		<!-- Basic -->
+		<div class="lp-pricing__card">
+			<div class="lp-pricing__card-header"><h3>ベーシック</h3></div>
+			<div class="lp-pricing__price">
+				<span class="lp-pricing__currency">¥</span>
+				<span class="lp-pricing__amount">1,000</span>
+			</div>
+			<ul class="lp-pricing__features">
+				<li>今日の運命の相手 1名</li>
+				<li>簡単AI相性レポート</li>
+				<li>24時間チャット</li>
+			</ul>
+			<button class="lp-btn lp-btn--primary lp-pricing__btn" onclick="alert('デモです。実際のサービスではStripe決済に接続します。')">購入する</button>
+		</div>
+
+		<!-- Standard -->
+		<div class="lp-pricing__card lp-pricing__card--popular">
+			<div class="lp-pricing__badge">人気No.1</div>
+			<div class="lp-pricing__card-header"><h3>スタンダード</h3></div>
+			<div class="lp-pricing__price">
+				<span class="lp-pricing__currency">¥</span>
+				<span class="lp-pricing__amount">3,000</span>
+			</div>
+			<ul class="lp-pricing__features">
+				<li>運命の相手 3名マッチング</li>
+				<li>詳細AI相性レポート</li>
+				<li>7日間チャット</li>
+				<li>葛藤分析・タイミング予測</li>
+			</ul>
+			<button class="lp-btn lp-btn--accent lp-pricing__btn" onclick="alert('デモです。実際のサービスではStripe決済に接続します。')">購入する</button>
+		</div>
+
+		<!-- Premium -->
+		<div class="lp-pricing__card">
+			<div class="lp-pricing__card-header"><h3>プレミアム</h3></div>
+			<div class="lp-pricing__price">
+				<span class="lp-pricing__currency">¥</span>
+				<span class="lp-pricing__amount">6,900</span>
+			</div>
+			<ul class="lp-pricing__features">
+				<li>韓国式四柱結婚相性分析</li>
+				<li>年度別結婚運グラフ</li>
+				<li>運命の相手 5名マッチング</li>
+				<li>7日間チャット</li>
+				<li>PDF詳細レポート</li>
+			</ul>
+			<button class="lp-btn lp-btn--primary lp-pricing__btn" onclick="alert('デモです。実際のサービスではStripe決済に接続します。')">購入する</button>
+		</div>
+	</div>
+</div>
+</section>
+
+<div class="lp-section__divider">✦ ✦ ✦</div>
+
+<!-- ===== Demo Report ===== -->
+<section class="lp-section" id="report">
+<div class="lp-result">
+	<h2 class="lp-result__title">AI相性レポート（サンプル）</h2>
+	<div class="lp-result__content">
+		<div class="lp-report__total-score">
+			<span class="lp-report__score-number">87</span>
+			<span class="lp-report__score-unit">点</span>
+		</div>
+		<div class="lp-report__score-label">とても良い相性です！</div>
+
+		<h4 class="lp-report__section-title">相性スコア内訳</h4>
+		<div class="lp-report__score-bar">
+			<span class="lp-report__bar-label">四柱推命</span>
+			<div class="lp-report__bar" style="width:85%"></div>
+			<span class="lp-report__bar-value">85</span>
+		</div>
+		<div class="lp-report__score-bar">
+			<span class="lp-report__bar-label">性格相性</span>
+			<div class="lp-report__bar" style="width:90%"></div>
+			<span class="lp-report__bar-value">90</span>
+		</div>
+		<div class="lp-report__score-bar">
+			<span class="lp-report__bar-label">価値観</span>
+			<div class="lp-report__bar" style="width:80%"></div>
+			<span class="lp-report__bar-value">80</span>
+		</div>
+
+		<h4 class="lp-report__section-title">四柱推命分析</h4>
+		<p class="lp-report__text">お二人の四柱を分析したところ、五行の相生関係が非常に良好です。特に「木」と「水」の関係性が強く、お互いを自然に支え合える関係です。結婚運は2026年〜2027年が特に高まります。</p>
+
+		<h4 class="lp-report__section-title">性格補完分析</h4>
+		<p class="lp-report__text">あなたのコミュニケーションスタイルと相手の性格は補完関係にあります。あなたが積極的にリードし、相手が受け止めるバランスの良い関係が期待できます。</p>
+
+		<h4 class="lp-report__section-title">葛藤ポイント</h4>
+		<p class="lp-report__text">お金の使い方に対する価値観が少し異なります。将来に向けて早めに話し合うことで、大きな葛藤を防げるでしょう。</p>
+
+		<h4 class="lp-report__section-title">関係発展タイミング</h4>
+		<p class="lp-report__text">出会いから3ヶ月目が関係を深める最適なタイミングです。春の季節に旅行を計画すると、二人の絆がさらに強まるでしょう。</p>
+	</div>
+</div>
+</section>
+
+<div class="lp-section__divider">✦ ✦ ✦</div>
+
+<!-- ===== Chat Demo ===== -->
+<section class="lp-section lp-section--alt" id="chat">
+<div class="lp-chat">
+	<div class="lp-chat__header">
+		<h2 class="lp-chat__title">ゆうきさんとのチャット（デモ）</h2>
+		<div class="lp-chat__actions">
+			<button class="lp-btn lp-btn--small lp-btn--secondary">連絡先を共有</button>
+			<button class="lp-btn lp-btn--small lp-btn--danger">通報</button>
+		</div>
+	</div>
+
+	<div class="lp-chat__messages">
+		<div class="lp-chat__message lp-chat__message--theirs">
+			<div class="lp-chat__bubble">はじめまして！マッチングありがとうございます。プロフィール見ました、カフェ巡り好きなんですね！</div>
+			<span class="lp-chat__message-time">14:20</span>
+		</div>
+		<div class="lp-chat__message lp-chat__message--mine">
+			<div class="lp-chat__bubble">はじめまして！ありがとうございます。はい、週末はよくカフェ巡りしてます！</div>
+			<span class="lp-chat__message-time">14:22</span>
+		</div>
+		<div class="lp-chat__message lp-chat__message--theirs">
+			<div class="lp-chat__bubble">素敵ですね！おすすめのカフェってありますか？今度行ってみたいです</div>
+			<span class="lp-chat__message-time">14:23</span>
+		</div>
+		<div class="lp-chat__message lp-chat__message--mine">
+			<div class="lp-chat__bubble">表参道の「花と珈琲」ってお店がおすすめです！ラテアートが可愛いんですよ</div>
+			<span class="lp-chat__message-time">14:25</span>
+		</div>
+		<div class="lp-chat__message lp-chat__message--theirs">
+			<div class="lp-chat__bubble">いいですね！よかったら今度一緒に行きませんか？</div>
+			<span class="lp-chat__message-time">14:26</span>
+		</div>
+	</div>
+
+	<div class="lp-chat__input-area">
+		<textarea class="lp-chat__input" placeholder="メッセージを入力..." rows="2"></textarea>
+		<button class="lp-btn lp-btn--accent">送信</button>
+	</div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer class="lp-footer">
+	<p>LP AI Match — 韓国式AI運命マッチング</p>
+	<p style="margin-top:8px"><a href="#">利用規約</a> | <a href="#">プライバシーポリシー</a> | <a href="#">特定商取引法に基づく表記</a></p>
+	<p style="margin-top:8px">&copy; 2026 LP AI Match. All rights reserved.</p>
+</footer>
+
+<script>
+/* ===== Horoscope ===== */
+var signs = [
+	{name:'山羊座',symbol:'♑',el:'地'},
+	{name:'水瓶座',symbol:'♒',el:'風'},
+	{name:'魚座',symbol:'♓',el:'水'},
+	{name:'牡羊座',symbol:'♈',el:'火'},
+	{name:'牡牛座',symbol:'♉',el:'地'},
+	{name:'双子座',symbol:'♊',el:'風'},
+	{name:'蟹座',symbol:'♋',el:'水'},
+	{name:'獅子座',symbol:'♌',el:'火'},
+	{name:'乙女座',symbol:'♍',el:'地'},
+	{name:'天秤座',symbol:'♎',el:'風'},
+	{name:'蠍座',symbol:'♏',el:'水'},
+	{name:'射手座',symbol:'♐',el:'火'}
+];
+var signDates = [[20,19,21,20,21,21,23,23,23,23,22,22]];
+var fortunes = [
+	'今日は素敵な出会いの予感。いつもと違う場所に行ってみると、運命の人に出会えるかもしれません。',
+	'恋愛運が急上昇中！自分の気持ちに素直になることで、良い関係が築けるでしょう。',
+	'片思いの人は勇気を出してアプローチするチャンス。相手もあなたに好意を持っています。',
+	'穏やかな一日。パートナーがいる人は、日頃の感謝を伝えるのに最適なタイミングです。',
+	'直感を大切に。心がときめく相手がいたら、迷わず声をかけてみましょう。',
+	'過去の恋を手放す時。新しい出会いへの扉が開かれています。前を向いて進みましょう。'
+];
+var colors = ['ピンク','ラベンダー','ホワイト','ゴールド','スカイブルー','コーラル','ミントグリーン','ローズ'];
+var times = ['10:00〜12:00','13:00〜15:00','16:00〜18:00','19:00〜21:00','8:00〜10:00','15:00〜17:00'];
+
+function getZodiac(month, day) {
+	var cutoffs = [20,19,21,20,21,21,23,23,23,23,22,22];
+	var idx = month - 1;
+	if (day < cutoffs[idx]) idx = (idx + 11) % 12;
+	return signs[idx];
+}
+
+document.getElementById('lp-horoscope-submit').addEventListener('click', function() {
+	var val = document.getElementById('lp-horoscope-date').value;
+	if (!val) return;
+	var parts = val.split('-');
+	var m = parseInt(parts[1]), d = parseInt(parts[2]);
+	var sign = getZodiac(m, d);
+	var score = Math.floor(Math.random() * 30) + 70;
+
+	document.getElementById('lp-horoscope-symbol').textContent = sign.symbol;
+	document.getElementById('lp-horoscope-sign').textContent = sign.name;
+	document.getElementById('lp-horoscope-score').textContent = score;
+	document.getElementById('lp-horoscope-fortune').textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
+	document.getElementById('lp-horoscope-color').textContent = colors[Math.floor(Math.random() * colors.length)];
+	document.getElementById('lp-horoscope-time').textContent = times[Math.floor(Math.random() * times.length)];
+	document.getElementById('lp-horoscope-result').style.display = 'block';
+});
+
+/* ===== Tarot ===== */
+var tarotCards = [
+	{name:'愚者',emoji:'🃏',up:'新しい恋の始まり。自由な心で出会いを受け入れましょう。',rev:'恋愛に対して無計画になりがち。少し立ち止まって考えてみましょう。'},
+	{name:'魔術師',emoji:'🎩',up:'あなたの魅力が最大限に発揮される時。自信を持ってアプローチしましょう。',rev:'見栄を張りすぎていませんか？ありのままの自分を見せることが大切です。'},
+	{name:'女教皇',emoji:'📖',up:'直感を信じて。心の声に従えば、運命の相手に出会えるでしょう。',rev:'感情を抑えすぎないで。素直な気持ちを大切にしましょう。'},
+	{name:'女帝',emoji:'👑',up:'愛に満ちた関係が築けます。母性的な優しさが相手の心を包みます。',rev:'相手に尽くしすぎていませんか？自分自身も大切にしましょう。'},
+	{name:'皇帝',emoji:'🏛',up:'安定した関係を築くチャンス。リーダーシップを発揮して。',rev:'支配的にならないように注意。対等な関係を意識しましょう。'},
+	{name:'恋人',emoji:'💕',up:'運命的な出会いの予感。深い愛と絆で結ばれるでしょう。',rev:'選択を迫られるかも。本当に大切な人を見極めて。'},
+	{name:'戦車',emoji:'⚡',up:'恋愛に積極的になれる時。勇気を持って前に進みましょう。',rev:'焦りは禁物。相手のペースも尊重しましょう。'},
+	{name:'力',emoji:'🦁',up:'内面の強さが恋を引き寄せます。忍耐と優しさで愛を育てて。',rev:'自信を失わないで。あなたには十分な魅力があります。'},
+	{name:'運命の輪',emoji:'🎡',up:'恋愛運が大きく変わる転機。チャンスを逃さないで。',rev:'思い通りにいかなくても焦らずに。流れは必ず変わります。'},
+	{name:'正義',emoji:'⚖️',up:'公平で誠実な関係が築けます。お互いを尊重する姿勢が大切。',rev:'恋愛で不公平を感じていませんか？バランスを見直しましょう。'},
+	{name:'星',emoji:'⭐',up:'希望に満ちた恋愛運。あなたの願いは必ず叶います。',rev:'希望を失わないで。明けない夜はありません。'},
+	{name:'月',emoji:'🌙',up:'神秘的な魅力が増す時。ミステリアスなあなたに惹かれる人がいます。',rev:'不安や迷いに惑わされないで。真実を見極めましょう。'},
+	{name:'太陽',emoji:'☀️',up:'最高の恋愛運！明るく輝くあなたに幸せな出会いが訪れます。',rev:'楽観的すぎないように。現実もしっかり見つめましょう。'},
+	{name:'世界',emoji:'🌍',up:'恋愛の完成。すべてが調和し、理想的な関係が築けます。',rev:'もう少しで完成です。最後まで諦めないで。'}
+];
+var positions = ['過去','現在','未来'];
+
+document.getElementById('lp-tarot-draw').addEventListener('click', function() {
+	var shuffled = tarotCards.slice().sort(function() { return Math.random() - 0.5; });
+	var drawn = shuffled.slice(0, 3);
+	var container = document.getElementById('lp-tarot-cards');
+	container.innerHTML = '';
+
+	drawn.forEach(function(card, i) {
+		var reversed = Math.random() > 0.5;
+		var html = '<div class="lp-tarot__card' + (reversed ? ' lp-tarot__card--reversed' : '') + '">' +
+			'<div class="lp-tarot__card-image">' + card.emoji + '</div>' +
+			'<div class="lp-tarot__card-body">' +
+				'<div class="lp-tarot__card-position">' + positions[i] + '</div>' +
+				'<div class="lp-tarot__card-name">' + card.name + '</div>' +
+				(reversed ? '<div class="lp-tarot__card-reversed-label">逆位置</div>' : '') +
+				'<div class="lp-tarot__card-meaning">' + (reversed ? card.rev : card.up) + '</div>' +
+			'</div></div>';
+		container.innerHTML += html;
+	});
+
+	document.getElementById('lp-tarot-draw-area').style.display = 'none';
+	document.getElementById('lp-tarot-result').style.display = 'block';
+});
+
+/* ===== Profile Form Steps ===== */
+var currentStep = 1;
+var totalSteps = 4;
+
+function showStep(step) {
+	document.querySelectorAll('.lp-form__step').forEach(function(el) { el.style.display = 'none'; });
+	document.querySelector('.lp-form__step[data-step="' + step + '"]').style.display = 'block';
+	document.getElementById('lp-form-prev').style.display = step > 1 ? '' : 'none';
+	document.getElementById('lp-form-next').style.display = step < totalSteps ? '' : 'none';
+	document.getElementById('lp-form-submit').style.display = step === totalSteps ? '' : 'none';
+	document.getElementById('lp-form-progress').style.width = (step / totalSteps * 100) + '%';
+}
+
+document.getElementById('lp-form-next').addEventListener('click', function() {
+	if (currentStep < totalSteps) { currentStep++; showStep(currentStep); }
+});
+document.getElementById('lp-form-prev').addEventListener('click', function() {
+	if (currentStep > 1) { currentStep--; showStep(currentStep); }
+});
+
+document.getElementById('lp-profile-form-el').addEventListener('submit', function(e) {
+	e.preventDefault();
+	alert('プロフィールが保存されました！（デモ）');
+});
+
+// Limit value tags to 3
+document.querySelectorAll('input[name="values[]"]').forEach(function(cb) {
+	cb.addEventListener('change', function() {
+		var checked = document.querySelectorAll('input[name="values[]"]:checked').length;
+		if (checked > 3) this.checked = false;
+	});
+});
+
+/* ===== Smooth Scroll ===== */
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+	a.addEventListener('click', function(e) {
+		e.preventDefault();
+		var target = document.querySelector(this.getAttribute('href'));
+		if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	});
+});
+</script>
+
+</body>
+</html>
