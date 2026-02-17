@@ -1,0 +1,789 @@
+/* ==========================================================================
+   LP AI Match — Public Styles
+   Target: Japanese women. Minimal, cute but premium.
+   ========================================================================== */
+
+/* ---------- Base / Variables ---------- */
+:root {
+	--lp-primary: #e91e63;
+	--lp-primary-light: #f8bbd0;
+	--lp-primary-dark: #c2185b;
+	--lp-accent: #9c27b0;
+	--lp-accent-light: #e1bee7;
+	--lp-bg: #fefefe;
+	--lp-bg-soft: #fdf2f8;
+	--lp-text: #333;
+	--lp-text-light: #888;
+	--lp-border: #f0e6ed;
+	--lp-radius: 12px;
+	--lp-shadow: 0 2px 20px rgba(233, 30, 99, 0.08);
+	--lp-font: "Hiragino Kaku Gothic Pro", "Yu Gothic", "Meiryo", -apple-system, sans-serif;
+}
+
+/* ---------- Reset & Typography ---------- */
+[class^="lp-"] {
+	box-sizing: border-box;
+	font-family: var(--lp-font);
+}
+
+/* ---------- Buttons ---------- */
+.lp-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 28px;
+	border: none;
+	border-radius: 50px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	text-decoration: none;
+	line-height: 1.4;
+}
+
+.lp-btn--primary {
+	background: var(--lp-primary);
+	color: #fff;
+}
+.lp-btn--primary:hover {
+	background: var(--lp-primary-dark);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+}
+
+.lp-btn--accent {
+	background: linear-gradient(135deg, var(--lp-primary), var(--lp-accent));
+	color: #fff;
+}
+.lp-btn--accent:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 20px rgba(156, 39, 176, 0.3);
+}
+
+.lp-btn--secondary {
+	background: #fff;
+	color: var(--lp-primary);
+	border: 2px solid var(--lp-primary-light);
+}
+.lp-btn--secondary:hover {
+	background: var(--lp-bg-soft);
+}
+
+.lp-btn--danger {
+	background: #ff5252;
+	color: #fff;
+}
+
+.lp-btn--small {
+	padding: 6px 16px;
+	font-size: 13px;
+}
+
+/* ---------- Form Elements ---------- */
+.lp-input,
+.lp-chat__input {
+	width: 100%;
+	padding: 12px 16px;
+	border: 2px solid var(--lp-border);
+	border-radius: var(--lp-radius);
+	font-size: 15px;
+	font-family: var(--lp-font);
+	transition: border-color 0.3s;
+	background: #fff;
+}
+.lp-input:focus,
+.lp-chat__input:focus {
+	outline: none;
+	border-color: var(--lp-primary-light);
+}
+
+.lp-label {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--lp-text);
+	margin-bottom: 6px;
+}
+
+.lp-form-group {
+	margin-bottom: 20px;
+}
+
+.lp-radio-group {
+	display: flex;
+	gap: 12px;
+}
+
+.lp-radio,
+.lp-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.lp-notice {
+	padding: 16px 20px;
+	background: var(--lp-bg-soft);
+	border-left: 4px solid var(--lp-primary);
+	border-radius: 0 var(--lp-radius) var(--lp-radius) 0;
+	margin: 16px 0;
+}
+.lp-notice--warning {
+	border-left-color: #ff9800;
+}
+
+/* ---------- Horoscope ---------- */
+.lp-horoscope {
+	max-width: 480px;
+	margin: 0 auto;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.lp-horoscope__title {
+	font-size: 24px;
+	color: var(--lp-primary);
+	margin-bottom: 8px;
+}
+.lp-horoscope__subtitle {
+	color: var(--lp-text-light);
+	font-size: 14px;
+	margin-bottom: 32px;
+}
+
+.lp-horoscope__form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 32px;
+}
+.lp-horoscope__form .lp-form-group {
+	width: 100%;
+	max-width: 280px;
+	margin-bottom: 0;
+}
+
+.lp-horoscope__result {
+	animation: lp-fadeIn 0.6s ease;
+}
+
+.lp-horoscope__sign {
+	margin-bottom: 20px;
+}
+.lp-horoscope__symbol {
+	font-size: 48px;
+	display: block;
+	margin-bottom: 4px;
+}
+.lp-horoscope__sign-name {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--lp-accent);
+}
+
+.lp-horoscope__score-circle {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, var(--lp-primary-light), var(--lp-accent-light));
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 20px;
+}
+.lp-horoscope__score-number {
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--lp-primary);
+}
+.lp-horoscope__score-label {
+	font-size: 11px;
+	color: var(--lp-accent);
+}
+
+.lp-horoscope__fortune {
+	font-size: 16px;
+	line-height: 1.8;
+	color: var(--lp-text);
+	margin-bottom: 24px;
+	padding: 0 10px;
+}
+
+.lp-horoscope__extras {
+	display: flex;
+	justify-content: center;
+	gap: 32px;
+	margin-bottom: 32px;
+}
+.lp-horoscope__extra-label {
+	display: block;
+	font-size: 11px;
+	color: var(--lp-text-light);
+}
+.lp-horoscope__extra-value {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--lp-accent);
+}
+
+.lp-horoscope__cta {
+	background: var(--lp-bg-soft);
+	padding: 24px;
+	border-radius: var(--lp-radius);
+}
+.lp-horoscope__cta-text {
+	font-size: 15px;
+	color: var(--lp-text);
+	margin-bottom: 12px;
+}
+
+/* ---------- Tarot ---------- */
+.lp-tarot {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.lp-tarot__title {
+	font-size: 24px;
+	color: var(--lp-accent);
+	margin-bottom: 8px;
+}
+.lp-tarot__subtitle {
+	color: var(--lp-text-light);
+	font-size: 14px;
+	margin-bottom: 32px;
+}
+
+.lp-tarot__deck {
+	display: flex;
+	justify-content: center;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.lp-tarot__card-back {
+	width: 100px;
+	height: 150px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, var(--lp-accent), var(--lp-primary));
+	cursor: pointer;
+	transition: transform 0.3s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: var(--lp-shadow);
+}
+.lp-tarot__card-back::after {
+	content: "?";
+	font-size: 32px;
+	color: rgba(255, 255, 255, 0.5);
+}
+.lp-tarot__card-back:hover {
+	transform: translateY(-4px) rotate(-2deg);
+}
+
+.lp-tarot__cards {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	flex-wrap: wrap;
+	margin-bottom: 32px;
+}
+
+.lp-tarot__card {
+	width: 160px;
+	background: #fff;
+	border-radius: var(--lp-radius);
+	box-shadow: var(--lp-shadow);
+	overflow: hidden;
+	animation: lp-fadeIn 0.6s ease;
+}
+
+.lp-tarot__card-image {
+	width: 100%;
+	height: 120px;
+	background: linear-gradient(135deg, var(--lp-primary-light), var(--lp-accent-light));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 40px;
+}
+.lp-tarot__card--reversed .lp-tarot__card-image {
+	transform: rotate(180deg);
+}
+
+.lp-tarot__card-body {
+	padding: 12px;
+}
+.lp-tarot__card-position {
+	font-size: 11px;
+	color: var(--lp-text-light);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+.lp-tarot__card-name {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--lp-accent);
+	margin: 4px 0 8px;
+}
+.lp-tarot__card-reversed-label {
+	font-size: 11px;
+	color: var(--lp-primary);
+	font-weight: 600;
+}
+.lp-tarot__card-meaning {
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--lp-text);
+}
+
+.lp-tarot__cta {
+	background: var(--lp-bg-soft);
+	padding: 24px;
+	border-radius: var(--lp-radius);
+}
+.lp-tarot__cta-text {
+	margin-bottom: 12px;
+}
+
+/* ---------- Profile Form ---------- */
+.lp-profile-form {
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+.lp-profile-form__title {
+	text-align: center;
+	color: var(--lp-primary);
+	font-size: 24px;
+	margin-bottom: 8px;
+}
+.lp-profile-form__subtitle {
+	text-align: center;
+	color: var(--lp-text-light);
+	font-size: 14px;
+	margin-bottom: 32px;
+}
+
+.lp-form__step-title {
+	font-size: 18px;
+	color: var(--lp-accent);
+	margin-bottom: 20px;
+}
+
+.lp-option-group {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.lp-option {
+	display: block;
+	cursor: pointer;
+}
+.lp-option input { display: none; }
+.lp-option__text {
+	display: block;
+	padding: 12px 16px;
+	border: 2px solid var(--lp-border);
+	border-radius: var(--lp-radius);
+	font-size: 13px;
+	text-align: center;
+	transition: all 0.3s;
+}
+.lp-option input:checked + .lp-option__text {
+	border-color: var(--lp-primary);
+	background: var(--lp-bg-soft);
+	color: var(--lp-primary);
+	font-weight: 600;
+}
+
+.lp-value-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.lp-value-tag {
+	cursor: pointer;
+}
+.lp-value-tag input { display: none; }
+.lp-value-tag__text {
+	display: inline-block;
+	padding: 8px 18px;
+	border: 2px solid var(--lp-border);
+	border-radius: 50px;
+	font-size: 13px;
+	transition: all 0.3s;
+}
+.lp-value-tag input:checked + .lp-value-tag__text {
+	border-color: var(--lp-accent);
+	background: var(--lp-accent);
+	color: #fff;
+}
+
+.lp-form__hint {
+	color: var(--lp-text-light);
+	font-size: 13px;
+	margin-bottom: 16px;
+}
+
+.lp-form__nav {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 32px;
+}
+
+.lp-form__progress {
+	height: 4px;
+	background: var(--lp-border);
+	border-radius: 2px;
+	margin-top: 20px;
+	overflow: hidden;
+}
+.lp-form__progress-bar {
+	height: 100%;
+	background: linear-gradient(to right, var(--lp-primary), var(--lp-accent));
+	border-radius: 2px;
+	transition: width 0.4s ease;
+}
+
+/* ---------- Pricing ---------- */
+.lp-pricing {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 60px 20px;
+	text-align: center;
+}
+.lp-pricing__title {
+	font-size: 28px;
+	color: var(--lp-primary);
+	margin-bottom: 8px;
+}
+.lp-pricing__subtitle {
+	color: var(--lp-text-light);
+	margin-bottom: 40px;
+}
+
+.lp-pricing__cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 24px;
+	align-items: start;
+}
+
+.lp-pricing__card {
+	background: #fff;
+	border-radius: 16px;
+	padding: 32px 24px;
+	box-shadow: var(--lp-shadow);
+	border: 2px solid transparent;
+	position: relative;
+	transition: transform 0.3s, box-shadow 0.3s;
+}
+.lp-pricing__card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 30px rgba(233, 30, 99, 0.12);
+}
+.lp-pricing__card--popular {
+	border-color: var(--lp-primary);
+	transform: scale(1.02);
+}
+.lp-pricing__card--popular:hover {
+	transform: scale(1.02) translateY(-4px);
+}
+
+.lp-pricing__badge {
+	position: absolute;
+	top: -12px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--lp-primary);
+	color: #fff;
+	padding: 4px 20px;
+	border-radius: 50px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.lp-pricing__card-header h3 {
+	font-size: 18px;
+	color: var(--lp-accent);
+	margin-bottom: 16px;
+}
+
+.lp-pricing__price {
+	margin-bottom: 24px;
+}
+.lp-pricing__currency {
+	font-size: 18px;
+	color: var(--lp-text);
+	vertical-align: top;
+}
+.lp-pricing__amount {
+	font-size: 42px;
+	font-weight: 700;
+	color: var(--lp-primary);
+}
+
+.lp-pricing__features {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 28px;
+	text-align: left;
+}
+.lp-pricing__features li {
+	padding: 8px 0;
+	font-size: 14px;
+	color: var(--lp-text);
+	border-bottom: 1px solid var(--lp-border);
+}
+.lp-pricing__features li::before {
+	content: "\2713 ";
+	color: var(--lp-primary);
+	font-weight: bold;
+	margin-right: 8px;
+}
+
+.lp-pricing__btn {
+	width: 100%;
+}
+
+/* ---------- Matching ---------- */
+.lp-matching {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+.lp-matching__title {
+	text-align: center;
+	color: var(--lp-primary);
+	font-size: 24px;
+	margin-bottom: 16px;
+}
+.lp-matching__desc {
+	text-align: center;
+	color: var(--lp-text-light);
+	margin-bottom: 32px;
+}
+
+.lp-matching__list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.lp-matching__item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	background: #fff;
+	border-radius: var(--lp-radius);
+	box-shadow: var(--lp-shadow);
+}
+.lp-matching__item-name {
+	font-weight: 600;
+	color: var(--lp-text);
+}
+.lp-matching__item-tier {
+	font-size: 12px;
+	color: var(--lp-text-light);
+	margin-left: 8px;
+}
+.lp-matching__item-actions {
+	display: flex;
+	gap: 8px;
+}
+
+/* ---------- Result ---------- */
+.lp-result {
+	max-width: 700px;
+	margin: 0 auto;
+	padding: 40px 20px;
+}
+.lp-result__title {
+	text-align: center;
+	color: var(--lp-primary);
+	font-size: 24px;
+	margin-bottom: 32px;
+}
+.lp-result__content {
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+	box-shadow: var(--lp-shadow);
+	margin-bottom: 24px;
+}
+.lp-result__actions {
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+}
+.lp-result__success {
+	text-align: center;
+	padding: 60px 20px;
+}
+.lp-result__success h2 {
+	color: var(--lp-primary);
+	margin-bottom: 12px;
+}
+
+/* ---------- Chat ---------- */
+.lp-chat {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 20px;
+}
+.lp-chat__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.lp-chat__title {
+	font-size: 18px;
+	color: var(--lp-text);
+}
+.lp-chat__actions {
+	display: flex;
+	gap: 8px;
+}
+
+.lp-chat__messages {
+	height: 400px;
+	overflow-y: auto;
+	background: var(--lp-bg-soft);
+	border-radius: var(--lp-radius);
+	padding: 16px;
+	margin-bottom: 12px;
+}
+.lp-chat__loading {
+	text-align: center;
+	color: var(--lp-text-light);
+	padding: 20px;
+}
+
+.lp-chat__message {
+	margin-bottom: 12px;
+	display: flex;
+	flex-direction: column;
+}
+.lp-chat__message--mine {
+	align-items: flex-end;
+}
+.lp-chat__message--theirs {
+	align-items: flex-start;
+}
+
+.lp-chat__bubble {
+	max-width: 75%;
+	padding: 10px 16px;
+	border-radius: 18px;
+	font-size: 14px;
+	line-height: 1.5;
+	word-break: break-word;
+}
+.lp-chat__message--mine .lp-chat__bubble {
+	background: var(--lp-primary);
+	color: #fff;
+	border-bottom-right-radius: 4px;
+}
+.lp-chat__message--theirs .lp-chat__bubble {
+	background: #fff;
+	color: var(--lp-text);
+	border-bottom-left-radius: 4px;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.lp-chat__message-time {
+	font-size: 11px;
+	color: var(--lp-text-light);
+	margin-top: 4px;
+}
+
+.lp-chat__input-area {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+}
+.lp-chat__input {
+	flex: 1;
+	resize: none;
+}
+
+/* ---------- Modal ---------- */
+.lp-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10000;
+}
+.lp-modal__content {
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+	max-width: 400px;
+	width: 90%;
+}
+.lp-modal__content h3 {
+	margin-bottom: 16px;
+	color: var(--lp-text);
+}
+.lp-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+/* ---------- Report (inside content) ---------- */
+.lp-report__total-score { text-align: center; margin: 20px 0; }
+.lp-report__score-number { font-size: 64px; font-weight: 700; color: var(--lp-primary); }
+.lp-report__score-unit { font-size: 20px; color: var(--lp-text-light); }
+.lp-report__score-label { text-align: center; color: var(--lp-accent); font-size: 16px; margin-bottom: 28px; }
+.lp-report__section-title { color: var(--lp-accent); font-size: 17px; margin-top: 28px; border-bottom: 1px solid var(--lp-border); padding-bottom: 6px; }
+.lp-report__score-bar { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+.lp-report__bar-label { width: 90px; font-size: 13px; color: var(--lp-text-light); flex-shrink: 0; }
+.lp-report__bar { height: 16px; background: linear-gradient(to right, var(--lp-primary-light), var(--lp-primary)); border-radius: 8px; flex: 1; }
+.lp-report__bar-value { width: 50px; text-align: right; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+
+.lp-report__marriage-graph { display: flex; justify-content: space-around; align-items: flex-end; height: 180px; padding: 10px 0; }
+.lp-report__graph-bar { display: flex; flex-direction: column; align-items: center; }
+.lp-report__graph-fill { width: 28px; background: linear-gradient(to top, var(--lp-primary-light), var(--lp-primary)); border-radius: 4px 4px 0 0; min-height: 4px; }
+.lp-report__graph-year { font-size: 11px; margin-top: 6px; color: var(--lp-text-light); }
+.lp-report__graph-value { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+
+/* ---------- Animations ---------- */
+@keyframes lp-fadeIn {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+	.lp-option-group { grid-template-columns: 1fr; }
+	.lp-pricing__cards { grid-template-columns: 1fr; }
+	.lp-pricing__card--popular { transform: none; }
+	.lp-tarot__deck { gap: 8px; }
+	.lp-tarot__card-back { width: 80px; height: 120px; }
+	.lp-tarot__cards { gap: 10px; }
+	.lp-tarot__card { width: 140px; }
+	.lp-chat__messages { height: 300px; }
+}
