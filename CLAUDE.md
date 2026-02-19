@@ -21,130 +21,332 @@ This is a **WordPress plugin** (`lp-ai-match`). All logic lives in the plugin �
 ```
 /
 ├── CLAUDE.md                          # AI assistant guidance (this file)
+├── index.html                         # Standalone HTML demo page (no WP needed)
 └── lp-ai-match/                       # WordPress plugin root
     ├── lp-ai-match.php                # Main plugin file (bootstrap)
     ├── uninstall.php                  # Cleanup on uninstall
     ├── includes/                      # Core PHP classes
     │   ├── class-lp-activator.php     # Activation hooks (DB tables, defaults)
     │   ├── class-lp-deactivator.php   # Deactivation hooks
-    │   ├── class-lp-post-types.php    # CPT registration
-    │   ├── class-lp-matching.php      # Matching algorithm
+    │   ├── class-lp-post-types.php    # CPT registration (4 types)
+    │   ├── class-lp-matching.php      # Matching algorithm + personality questions
     │   ├── class-lp-saju.php          # Saju (四柱) calculation engine
     │   ├── class-lp-horoscope.php     # Zodiac sign calculation & horoscope
-    │   ├── class-lp-tarot.php         # Tarot card logic
-    │   ├── class-lp-report.php        # AI report generation
-    │   ├── class-lp-pdf.php           # HTML→PDF conversion
-    │   ├── class-lp-chat.php          # Internal chat system
-    │   ├── class-lp-stripe.php        # Stripe payment integration
+    │   ├── class-lp-tarot.php         # Tarot card logic (22 Major Arcana)
+    │   ├── class-lp-report.php        # AI report generation (OpenAI integration)
+    │   ├── class-lp-pdf.php           # HTML→PDF conversion (DomPDF with HTML fallback)
+    │   ├── class-lp-chat.php          # Internal chat system with cron expiry
+    │   ├── class-lp-stripe.php        # Stripe payment (direct API, no SDK)
     │   └── class-lp-rest-api.php      # REST API endpoints
     ├── admin/                         # WP admin pages
-    │   ├── class-lp-admin.php         # Admin menu & pages
-    │   ├── views/                     # Admin page templates
-    │   ├── css/                       # Admin styles
-    │   └── js/                        # Admin scripts
-    ├── public/                        # Frontend
-    │   ├── class-lp-public.php        # Frontend controller
-    │   ├── views/                     # Frontend templates (shortcodes)
-    │   ├── css/                       # Frontend styles
-    │   └── js/                        # Frontend scripts
-    ├── assets/                        # Static assets
-    │   └── images/                    # Tarot card images, icons
-    └── languages/                     # i18n (.pot/.po/.mo files, Japanese)
+    │   ├── class-lp-admin.php         # Admin menu, settings registration
+    │   ├── css/admin.css              # Admin styles
+    │   ├── js/admin.js                # Admin scripts (block confirm dialog)
+    │   └── views/                     # Admin page templates
+    │       ├── dashboard.php          # Stats + recent matches
+    │       ├── settings.php           # Pricing, weights, Stripe, OpenAI config
+    │       ├── tarot.php              # Tarot card interpretation editor
+    │       ├── horoscope.php          # Horoscope fortune text editor
+    │       ├── match-logs.php         # Match history viewer
+    │       ├── users.php              # User management + block/unblock
+    │       └── chat-reports.php       # Chat report viewer
+    └── public/                        # Frontend
+        ├── class-lp-public.php        # Frontend controller + shortcode registration
+        ├── css/public.css             # Frontend styles (~785 lines, pink/purple theme)
+        ├── js/public.js               # Frontend interactions (~347 lines, jQuery)
+        └── views/                     # Frontend templates (shortcodes)
+            ├── horoscope.php          # DOB form + result display
+            ├── tarot.php              # 3-card draw UI
+            ├── profile-form.php       # 4-step profile creation form
+            ├── matching.php           # User's match list
+            ├── matching-result.php    # Report display + payment landing
+            ├── chat.php               # Chat interface with AJAX polling
+            └── pricing.php            # 3-tier pricing cards
 ```
+
+### Missing Directories (Planned but Not Yet Created)
+
+These are referenced in code but do not exist yet:
+
+- `lp-ai-match/assets/images/` — Tarot card images (filenames like `fool.png` referenced in `LP_Tarot` but absent; JS uses `card.name.charAt(0)` as placeholder)
+- `lp-ai-match/languages/` — i18n `.pot`/`.po`/`.mo` files (all `__()` calls fall back to hardcoded Japanese strings)
+- `lp-ai-match/vendor/` — Composer autoload / DomPDF (PDF generation falls back to HTML file download)
+
+### Standalone Demo Page
+
+`index.html` at the repo root is a self-contained single-page HTML demo with all CSS and JS inline. It demonstrates all frontend features (horoscope, tarot, profile form, pricing, report, chat) without requiring WordPress. Useful for design previews.
+
+## Plugin Bootstrap Flow
+
+1. `lp-ai-match.php` defines constants (`LP_AI_MATCH_VERSION` = 1.0.0, `LP_AI_MATCH_PLUGIN_DIR`, `LP_AI_MATCH_PLUGIN_URL`, `LP_AI_MATCH_PLUGIN_BASENAME`)
+2. Requires all 12 include files, admin class, and public class
+3. Registers activation hook → `LP_Activator::activate()` (creates DB tables, sets default options)
+4. Registers deactivation hook → `LP_Deactivator::deactivate()` (clears cron, flushes rewrite rules)
+5. On `plugins_loaded`, initializes: `LP_Post_Types::init()`, `LP_Rest_API::init()`, `LP_Chat::init()`, `LP_Stripe::init()`, `LP_Admin::init()` (admin only), `LP_Public::init()`
+6. Loads text domain `lp-ai-match` from `/languages`
 
 ## Custom Post Types
 
-| CPT Slug      | Purpose                                      |
-|---------------|----------------------------------------------|
-| `lp_profile`  | User dating profiles (DOB, preferences, etc.) |
-| `lp_match`    | Match records between two profiles            |
-| `lp_report`   | AI compatibility reports (linked to matches)  |
-| `lp_reading`  | Horoscope/tarot reading results               |
+All 4 CPTs are registered as `public => false`, `show_ui => true`, `show_in_menu => false`, `rewrite => false`:
 
-Additional custom DB tables may be used for chat messages and matching scores.
+| CPT Slug | Japanese Label | `supports` | Status |
+|-----------|---------------|------------|--------|
+| `lp_profile` | プロフィール | title, author | Active — stores user dating profiles |
+| `lp_match` | マッチング | title, author | Active — stores match records between profiles |
+| `lp_report` | 相性レポート | title, author, editor | Active — stores AI compatibility reports |
+| `lp_reading` | 占い結果 | title, author, editor | **Registered but unused** — no code writes to or reads from this CPT |
+
+## Custom Database Tables
+
+Created on plugin activation via `dbDelta()`:
+
+### `{prefix}lp_chat_messages`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | BIGINT PK AUTO_INCREMENT | |
+| `match_id` | BIGINT (indexed) | FK to `lp_match` post |
+| `sender_id` | BIGINT (indexed) | WP user ID |
+| `receiver_id` | BIGINT (indexed) | WP user ID |
+| `message` | TEXT | Chat message content |
+| `is_read` | TINYINT(1) DEFAULT 0 | Read status |
+| `created_at` | DATETIME DEFAULT CURRENT_TIMESTAMP | |
+
+### `{prefix}lp_matching_scores`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | BIGINT PK AUTO_INCREMENT | |
+| `profile_a_id` | BIGINT (indexed) | FK to `lp_profile` post |
+| `profile_b_id` | BIGINT (indexed) | FK to `lp_profile` post |
+| `saju_score` | DECIMAL(5,2) | 0–100 |
+| `personality_score` | DECIMAL(5,2) | 0–100 |
+| `values_score` | DECIMAL(5,2) | 0–100 |
+| `total_score` | DECIMAL(5,2) | Weighted composite |
+| `calculated_at` | DATETIME DEFAULT CURRENT_TIMESTAMP | |
+| | UNIQUE KEY | `(profile_a_id, profile_b_id)` |
+
+## Post Meta Fields
+
+### `lp_profile` meta
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `_lp_birthdate` | string (Y-m-d) | Date of birth |
+| `_lp_gender` | string | Gender (male/female) |
+| `_lp_nickname` | string | Display name |
+| `_lp_personality_answers` | array | 8 personality question answers |
+| `_lp_values` | array | Selected value keywords (max 3) |
+
+### `lp_match` meta
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `_lp_profile_a` | int | Profile A post ID |
+| `_lp_profile_b` | int | Profile B post ID |
+| `_lp_tier` | string | basic/standard/premium |
+| `_lp_report_id` | int | Associated report post ID |
+| `_lp_chat_status` | string | active/expired/blocked |
+| `_lp_chat_started` | string | Chat activation timestamp |
+| `_lp_contact_consents` | array | User IDs who consented to share contact |
+
+### `lp_report` meta
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `_lp_match_id` | int | Associated match post ID |
+| `_lp_profile_a` | int | Profile A post ID |
+| `_lp_profile_b` | int | Profile B post ID |
+| `_lp_scores` | array | Score breakdown (saju, personality, values, total) |
+| `_lp_tier` | string | basic/standard/premium |
+| `_lp_generated_at` | string | Report generation timestamp |
+| `_lp_pdf_path` | string | Path to generated PDF/HTML file |
+
+### User meta
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `_lp_blocked` | bool | Whether user is blocked by admin |
+| `_lp_last_payment` | array | Last Stripe payment details |
+| `_lp_stripe_session_*` | string | Stripe checkout session references |
+
+## WordPress Options
+
+All prefixed with `lp_ai_match_`. Set on activation with defaults:
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `lp_ai_match_price_basic` | 1000 | Basic tier price (JPY) |
+| `lp_ai_match_price_standard` | 3000 | Standard tier price (JPY) |
+| `lp_ai_match_price_premium` | 6900 | Premium tier price (JPY) |
+| `lp_ai_match_currency` | jpy | Currency code |
+| `lp_ai_match_stripe_mode` | test | test or live |
+| `lp_ai_match_stripe_test_publishable_key` | (empty) | Stripe test publishable key |
+| `lp_ai_match_stripe_test_secret_key` | (empty) | Stripe test secret key |
+| `lp_ai_match_stripe_live_publishable_key` | (empty) | Stripe live publishable key |
+| `lp_ai_match_stripe_live_secret_key` | (empty) | Stripe live secret key |
+| `lp_ai_match_stripe_webhook_secret` | (empty) | Stripe webhook signing secret |
+| `lp_ai_match_openai_api_key` | (empty) | OpenAI API key for AI reports |
+| `lp_ai_match_weight_saju` | 40 | Saju score weight (%) |
+| `lp_ai_match_weight_personality` | 40 | Personality score weight (%) |
+| `lp_ai_match_weight_values` | 20 | Values score weight (%) |
+| `lp_ai_match_chat_duration_basic` | 24 | Basic chat duration (hours) |
+| `lp_ai_match_chat_duration_standard` | 7 | Standard chat duration (days) |
+| `lp_ai_match_chat_duration_premium` | 7 | Premium chat duration (days) |
+| `lp_ai_match_matches_basic` | 1 | Basic match count |
+| `lp_ai_match_matches_standard` | 3 | Standard match count |
+| `lp_ai_match_matches_premium` | 5 | Premium match count |
+| `lp_ai_match_horoscope_{sign}` | (per sign) | Admin-overridden fortune texts |
+| `lp_ai_match_tarot_cards` | (per card) | Admin-overridden tarot interpretations |
+| `lp_ai_match_chat_reports` | array | Chat report log |
 
 ## Core Features
 
 ### Free Features (Lead Generation)
-1. **Horoscope** — DOB input → zodiac calculation → daily love fortune → CTA to paid matching
-2. **Tarot 3-card draw** — random 3 cards → interpretation text → cute minimal UI → admin-editable
+1. **Horoscope** — DOB input → zodiac sign calculation (12 signs, handles Capricorn year-boundary) → deterministic daily fortune (based on day-of-year) → luck score (via crc32) → lucky color/time → CTA to paid matching
+2. **Tarot 3-card draw** — 22 Major Arcana cards → random 3 drawn → 50% reversed chance → past/present/future positions → upright/reverse love interpretations → admin-editable
 
 ### Paid Products (Admin-configurable pricing)
-| Tier | Default Price | Features |
-|------|--------------|----------|
-| Basic | ¥1,000 | 1 match, simple AI report, 24h chat |
-| Standard | ¥3,000 | 3 matches, detailed AI report, 7-day chat |
-| Premium | ¥6,900 | Saju marriage compatibility, yearly graph, 5 matches, 7-day chat |
+| Tier | Default Price | Matches | Report Depth | Chat Duration |
+|------|--------------|---------|--------------|---------------|
+| Basic | ¥1,000 | 1 | Simple AI report | 24 hours |
+| Standard | ¥3,000 | 3 | Detailed AI report + conflict/timing | 7 days |
+| Premium | ¥6,900 | 5 | Full report + marriage luck graph | 7 days |
 
 ### Matching Algorithm
 ```
-Final Score = (Saju compatibility 40%) + (Personality match 40%) + (Values fit 20%)
+Final Score = (Saju score × weight_saju%) + (Personality score × weight_personality%) + (Values score × weight_values%)
 ```
-Each component scored 0–100, then weighted. Input: DOB, 5–10 personality questions, romance style, value keywords, optional face image.
+
+- **Saju score** (`LP_Saju`): Computes Year/Month/Day pillars (3 pillars, no Hour pillar) from Heavenly Stems / Earthly Branches. Maps stems/branches to 5 elements (木火土金水). Uses 25-entry compatibility matrix to average across pillar pairs. Score 0–100.
+- **Personality score** (`LP_Matching`): 8 questions with 4 options each. "Complement" questions score higher when different (85 vs 60); "match" questions score higher when same (90 vs 55). Final = average across questions.
+- **Values score** (`LP_Matching`): Jaccard similarity of selected value keywords × 100. 12 available keywords (family, career, adventure, stability, creativity, health, education, kindness, humor, honesty, ambition, loyalty).
+
+Matching finds opposite-gender profiles, scores all candidates, sorts descending, returns top N per tier.
 
 ### AI Report Structure
-1. Total compatibility score
-2. Saju-based analysis
-3. Personality complement explanation
-4. Conflict potential
-5. Relationship development timing
+Content sections vary by tier:
 
-Reports are score-based explanations — never random text generation.
+| Section | Basic | Standard | Premium |
+|---------|-------|----------|---------|
+| Total compatibility score | Yes | Yes | Yes |
+| Saju analysis | Yes | Yes | Yes |
+| Personality complement | Yes | Yes | Yes |
+| Conflict potential | — | Yes | Yes |
+| Relationship timing | — | Yes | Yes |
+| Marriage luck yearly graph | — | — | Yes |
+| Values analysis | Yes | Yes | Yes |
+
+Reports use score-based branching for text (5 tiers from "運命の相手！" at ≥90 down to lowest). When OpenAI API key is configured (standard/premium tiers), calls `gpt-4o-mini` for additional AI-generated narrative.
 
 ### PDF Generation
-- HTML report → PDF conversion
-- User download + admin access
+- `LP_PDF` tries DomPDF first (checks `vendor/autoload.php`)
+- **Current state**: Falls back to saving as HTML file since `vendor/` directory doesn't exist
+- Saves to `{wp_upload_dir}/lp-reports/` with `.htaccess` protection
+- Embedded CSS with Japanese fonts, pink/purple color scheme
 
 ### Internal Chat
-- 1:1 messaging (AJAX polling, not real-time required)
-- Auto-expiry (24h or 7 days based on plan)
-- Optional mutual contact sharing
-- Chat logs saved, reporting/blocking available
+- 1:1 messaging via AJAX polling (5-second interval in `public.js`)
+- Auto-expiry via WP-Cron (hourly check, `lp_chat_expiry_check`)
+- Duration: 24h (basic) or 7 days (standard/premium), configurable
+- Mutual contact sharing consent system
+- Chat reporting with reason field
+- Admin can block/unblock users (user meta `_lp_blocked`)
+- Messages stored in custom `lp_chat_messages` table (limit 100 per fetch)
 
 ### Payment (Stripe)
-- Stripe Checkout with webhooks
-- On success: grant matching rights → generate report → activate chat
-- Japan payment methods: credit card, Apple Pay, (PayPay if feasible)
-
-## Security Requirements
-
-- WordPress nonce verification on all forms and API calls
-- Input sanitization (`sanitize_text_field`, `wp_kses`, etc.)
-- XSS prevention (escape all output with `esc_html`, `esc_attr`, etc.)
-- CSRF protection via nonces
-- Prepared statements for all custom SQL (`$wpdb->prepare()`)
-- Age verification checkbox
-- Terms of service and privacy policy pages
-- Chat reporting and admin blocking
+- Direct Stripe API calls via `wp_remote_post()` (no PHP SDK)
+- Creates Stripe Checkout sessions with `payment_method_types[]=card`
+- Webhook handler with HMAC-SHA256 signature verification (5-minute timestamp tolerance)
+- On `checkout.session.completed`: find matches → create `lp_match` posts → generate reports → activate chats
+- Success URL: `/matching-result/`, Cancel URL: `/matching/`
 
 ## REST API
 
-All interactive features use the WordPress REST API (`/wp-json/lp-ai-match/v1/`). Key endpoints:
+Namespace: `/wp-json/lp-ai-match/v1/`
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | `/horoscope` | Generate horoscope reading |
-| POST | `/tarot/draw` | Draw 3 tarot cards |
-| POST | `/profile` | Create/update user profile |
-| POST | `/match/request` | Request matching (paid) |
-| GET | `/match/{id}` | Get match details |
-| GET | `/report/{id}` | Get AI report |
-| GET | `/report/{id}/pdf` | Download PDF report |
-| POST | `/chat/send` | Send chat message |
-| GET | `/chat/{match_id}` | Get chat messages (polling) |
-| POST | `/payment/create-session` | Create Stripe checkout session |
-| POST | `/payment/webhook` | Stripe webhook handler |
+| Method | Endpoint | Auth | Handler |
+|--------|----------|------|---------|
+| POST | `/horoscope` | Public | `LP_Horoscope::generate_daily_horoscope()` — requires `birthdate` param (Y-m-d) |
+| POST | `/tarot/draw` | Public | `LP_Tarot::draw_three_cards()` |
+| POST | `/profile` | Logged in | Create/update user profile post + meta |
+| GET | `/profile` | Logged in | Return current user's profile data |
+| POST | `/match/request` | Logged in | Validate profile, create Stripe checkout session |
+| GET | `/match/(?P<id>\d+)` | Logged in | Match details (ownership verified) |
+| GET | `/report/(?P<id>\d+)` | Logged in | Report content + scores (ownership verified) |
+| GET | `/report/(?P<id>\d+)/pdf` | Logged in | PDF/HTML download (ownership verified) |
+| POST | `/chat/send` | Logged in | Send chat message |
+| GET | `/chat/(?P<match_id>\d+)` | Logged in | Get messages (polling, after_id param) + chat_active status |
+| POST | `/chat/report` | Logged in | Report a chat message with reason |
+| POST | `/chat/consent-contact` | Logged in | Record contact sharing consent |
+| POST | `/payment/create-session` | Logged in | Create Stripe checkout session |
+| POST | `/payment/webhook` | Public | Stripe webhook (signature-verified), registered by `LP_Stripe` |
+
+Auth check: `check_logged_in()` returns `WP_Error` with 401 status if not authenticated.
+
+## Shortcodes
+
+Registered by `LP_Public`:
+
+| Shortcode | Template | Auth Required | Purpose |
+|-----------|----------|---------------|---------|
+| `[lp_horoscope]` | `public/views/horoscope.php` | No | Horoscope fortune form + results |
+| `[lp_tarot]` | `public/views/tarot.php` | No | Tarot 3-card draw |
+| `[lp_profile_form]` | `public/views/profile-form.php` | Yes | 4-step profile creation |
+| `[lp_matching]` | `public/views/matching.php` | Yes | User's match list |
+| `[lp_matching_result]` | `public/views/matching-result.php` | Yes | Report display (reads `report_id` from `$_GET`) |
+| `[lp_chat]` | `public/views/chat.php` | Yes | Chat interface (reads `match_id` from `$_GET`) |
+| `[lp_pricing]` | `public/views/pricing.php` | No | 3-tier pricing cards |
+
+## WordPress Hooks
+
+| Hook | Class | Method | Type |
+|------|-------|--------|------|
+| `plugins_loaded` | (main file) | `lp_ai_match_init()` | action |
+| `init` | LP_Post_Types | `register_post_types()` | action |
+| `rest_api_init` | LP_Rest_API | `register_routes()` | action |
+| `rest_api_init` | LP_Stripe | `register_webhook_route()` | action |
+| `lp_chat_expiry_check` | LP_Chat | `check_expired_chats()` | cron action (hourly) |
+| `admin_menu` | LP_Admin | `add_menu_pages()` | action |
+| `admin_init` | LP_Admin | `register_settings()` | action |
+| `admin_enqueue_scripts` | LP_Admin | `enqueue_assets()` | action |
+| `wp_enqueue_scripts` | LP_Public | `enqueue_assets()` | action |
+| Activation hook | LP_Activator | `activate()` | register_activation_hook |
+| Deactivation hook | LP_Deactivator | `deactivate()` | register_deactivation_hook |
 
 ## Admin Features
 
-WordPress admin dashboard provides:
-- Tarot card image & interpretation management
-- Horoscope text management
-- Pricing configuration
-- Matching weight adjustments
-- User blocking
-- Match log viewer
-- Report regeneration
+WordPress admin menu under "LP AI Match" (dashicons-heart, position 30, `manage_options` capability):
+
+| Page | Slug | Purpose |
+|------|------|---------|
+| ダッシュボード | `lp-ai-match` | Profile/match/report counts + last 10 matches table |
+| 設定 | `lp-ai-match-settings` | All plugin settings (pricing, weights, match counts, chat duration, Stripe keys, OpenAI key) |
+| タロットカード | `lp-ai-match-tarot` | Edit upright/reverse interpretations for each of 22 cards |
+| 星座運勢 | `lp-ai-match-horoscope` | Edit 3 fortune texts per zodiac sign |
+| マッチングログ | `lp-ai-match-logs` | Last 50 matches with profiles, tier, chat status, report link |
+| ユーザー管理 | `lp-ai-match-users` | All profiles with block/unblock actions |
+| 通報管理 | `lp-ai-match-reports` | Chat report log (message ID, reporter, reason, date) |
+
+## Frontend JavaScript Architecture
+
+`public/js/public.js` is a jQuery IIFE that uses the `lpAiMatch` global (from `wp_localize_script`):
+
+```javascript
+window.lpAiMatch = {
+    apiUrl: '/wp-json/lp-ai-match/v1',
+    nonce: '...',        // wp_rest nonce
+    stripeKey: '...',    // Stripe publishable key
+    i18n: { loading, error, send, chatExpired, reportSent }
+}
+```
+
+Key behaviors:
+- **Horoscope**: POST to `/horoscope`, populate result DOM with fadeIn
+- **Tarot**: POST to `/tarot/draw`, build card HTML with `escHtml()` utility
+- **Profile Form**: Multi-step navigation (4 steps), POST to `/profile`, redirect to `/matching/`
+- **Pricing**: POST to `/payment/create-session`, redirect to Stripe checkout URL
+- **Chat**: 5-second polling interval, GET `/chat/{matchId}?after={lastId}`, mine/theirs bubble classes, auto-scroll, report modal
 
 ## UI/Design Guidelines
 
@@ -152,29 +354,47 @@ WordPress admin dashboard provides:
 - **Style**: Minimal, cute but premium feel
 - **Avoid**: Random chat vibes, occult/spiritual aesthetics
 - **Tone**: Entertainment → seriousness (natural transition)
-- **Colors**: Soft pastels, clean whites, subtle gradients
+- **Colors**: Soft pastels (pink/purple palette), clean whites, subtle gradients — CSS custom properties defined in `public.css`
 - **Typography**: Clean Japanese web fonts
+- **CSS class pattern**: BEM-like `.lp-component__element--modifier`
+- **Responsive**: Mobile-first with breakpoint at 600px
+
+## Security Requirements
+
+- WordPress nonce verification on all admin forms and REST API calls
+- REST API auth via `check_logged_in()` returning `WP_Error(401)` for protected endpoints
+- Input sanitization: `sanitize_text_field()`, `absint()`, `sanitize_email()`
+- Output escaping: `esc_html()`, `esc_attr()`, `esc_url()`, `wp_kses_post()`
+- Prepared statements: `$wpdb->prepare()` for all custom SQL queries
+- Stripe webhook HMAC-SHA256 signature verification with timestamp tolerance
+- PDF directory protected with `.htaccess` deny all
+- Age verification checkbox in profile form
+- Chat reporting and admin user blocking
+- JS uses `escHtml()` utility for DOM text escaping
 
 ## Code Conventions
 
 ### PHP
 - WordPress coding standards (WPCS)
-- Class-based architecture, one class per file
-- Prefix all functions/classes with `lp_` or use `LP_` namespace
-- Use PHPDoc comments on all public methods
-- Use `$wpdb->prepare()` for all database queries
+- Class-based architecture, one class per file, all static methods
+- Class prefix: `LP_` (e.g., `LP_Saju`, `LP_Matching`)
+- PHPDoc comments on public methods
+- `$wpdb->prepare()` for all database queries
 - Escape all output (`esc_html()`, `esc_attr()`, `esc_url()`)
 - Sanitize all input (`sanitize_text_field()`, `absint()`, etc.)
 
 ### JavaScript
-- Vanilla JS or jQuery (WordPress-bundled) — no additional JS frameworks
-- Use `wp_localize_script()` for passing data to JS
-- AJAX via `wp.apiRequest()` or `fetch()` to REST API
+- jQuery (WordPress-bundled) — `jQuery(document).ready()` IIFE pattern
+- Use `wp_localize_script()` for passing data to JS (global `lpAiMatch`)
+- REST API calls via `jQuery.ajax()` with `X-WP-Nonce` header
+- No additional JS frameworks
 
 ### CSS
 - BEM-like naming: `.lp-component__element--modifier`
-- Mobile-first responsive design
+- CSS custom properties for theming (colors, fonts)
+- Mobile-first responsive design (breakpoint: 600px)
 - No CSS frameworks — custom styles only
+- All styles scoped to `.lp-*` prefix
 
 ### Git Workflow
 - Feature branches for new work
@@ -183,11 +403,34 @@ WordPress admin dashboard provides:
 
 ## Key Dependencies
 
-- **WordPress** 6.0+
-- **PHP** 7.4+
-- **Stripe PHP SDK** (via Composer or bundled)
-- **PDF library**: TCPDF or Dompdf (for HTML→PDF)
-- **OpenAI API** or similar (for AI report text generation)
+| Dependency | Status | Notes |
+|-----------|--------|-------|
+| WordPress 6.0+ | Required | Core platform |
+| PHP 7.4+ | Required | Server runtime |
+| jQuery | Required | WordPress-bundled, used for frontend JS |
+| DomPDF | **Not installed** | `vendor/` directory missing; PDF falls back to HTML download |
+| OpenAI API | Optional | For AI-enhanced report narrative (`gpt-4o-mini`); score-based text works without it |
+| Stripe API | Required for payments | Called directly via `wp_remote_post()`, no PHP SDK needed |
+
+## Known Gaps and TODO Items
+
+1. **No `vendor/` directory** — DomPDF library not installed. PDF generation falls back to HTML file download. Need to run Composer or bundle the library.
+2. **No tarot card images** — `assets/images/` directory missing. Tarot card `image` filenames (e.g., `fool.png`) referenced in `LP_Tarot` but files don't exist. JS uses first character of card name as fallback.
+3. **No i18n files** — `languages/` directory missing. All `__()` and `_e()` calls fall through to their literal Japanese strings. Functional but not translatable.
+4. **No `.gitignore`** — Should be added to exclude `vendor/`, `node_modules/`, `.env`, etc.
+5. **No `composer.json`** — No dependency management file for DomPDF or potential Stripe SDK.
+6. **No tests** — No PHPUnit, Jest, or any testing framework.
+7. **`lp_reading` CPT unused** — Registered in `LP_Post_Types` but no code creates or queries `lp_reading` posts. Could be used for storing horoscope/tarot reading history.
+8. **Hardcoded page URLs** — `/profile/`, `/matching/`, `/matching-result/`, `/chat/` are hardcoded in JS redirects and view templates instead of using WordPress `get_permalink()` or options.
+9. **Payment methods limited** — Only `card` payment method type. Apple Pay and PayPay mentioned as goals but not implemented.
+10. **No face image upload** — Matching algorithm description mentions "optional face image" but no upload handling exists.
+
+## Uninstall Behavior
+
+`uninstall.php` performs complete cleanup:
+- Deletes all posts of types: `lp_profile`, `lp_match`, `lp_report`, `lp_reading`
+- Drops tables: `{prefix}lp_chat_messages`, `{prefix}lp_matching_scores`
+- Deletes all options matching `lp_ai_match_%`
 
 ## Notes for AI Assistants
 
@@ -199,3 +442,6 @@ WordPress admin dashboard provides:
 - Use WordPress i18n functions (`__()`, `_e()`) for all strings.
 - Security is non-negotiable — every input sanitized, every output escaped, every DB query prepared.
 - Prefer WordPress APIs over custom solutions (WP_Query, WP REST API, Settings API, etc.).
+- All classes use static methods — no instantiation. Call via `LP_ClassName::method()`.
+- The plugin has no build step — edit PHP/JS/CSS files directly.
+- The standalone `index.html` demo is independent of the WordPress plugin and should be kept in sync with UI changes when practical.
