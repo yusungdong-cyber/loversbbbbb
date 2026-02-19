@@ -445,3 +445,135 @@ Key behaviors:
 - All classes use static methods — no instantiation. Call via `LP_ClassName::method()`.
 - The plugin has no build step — edit PHP/JS/CSS files directly.
 - The standalone `index.html` demo is independent of the WordPress plugin and should be kept in sync with UI changes when practical.
+
+---
+
+# LoversPick Core (`loverspick-core`)
+
+## Overview
+
+- **Plugin Name**: LoversPick Core
+- **Purpose**: Seoul anti-ripoff travel concierge — landing pages, pricing, lead capture, and Byeolgram Road partner directory
+- **Target**: International travelers visiting Seoul (English-primary)
+- **Model**: Real human chat support via Telegram/WhatsApp (NOT AI)
+- **Brand Rule**: **NO discount language** (no "10% off / discount / sale"). Use "Exclusive Benefits / Free Extras / Upgrades / Bonus items" instead.
+
+## Directory Structure
+
+```
+loverspick-core/
+├── loverspick-core.php            # Main plugin file (bootstrap + analytics + assets)
+├── uninstall.php                  # Cleanup on uninstall
+├── includes/
+│   ├── class-lpc-activator.php    # Activation (DB tables, defaults, page creation)
+│   ├── class-lpc-partners.php     # Partners CPT + taxonomies + meta boxes
+│   ├── class-lpc-settings.php     # Admin settings page (tabbed)
+│   ├── class-lpc-shortcodes.php   # All frontend shortcodes
+│   ├── class-lpc-leads.php        # Lead + partner application REST endpoints
+│   └── class-lpc-pages.php        # Creates all pages with content on activation
+├── admin/
+│   ├── css/admin.css              # Admin styles
+│   └── views/
+│       ├── settings.php           # Settings page template (3 tabs)
+│       ├── leads.php              # Leads viewer
+│       └── partner-apps.php       # Partner applications viewer
+└── public/
+    ├── css/loverspick.css         # Frontend styles (~900 lines, mobile-first)
+    └── js/loverspick.js           # Frontend JS (forms, filters, UTM capture)
+```
+
+## Pages Created on Activation
+
+| Slug | Title | Key Content |
+|------|-------|-------------|
+| `loverspick-home` | LoversPick Seoul | Hero + How It Works + Services + Why Not AI + Benefits + Testimonials + FAQ preview + Lead form |
+| `pricing` | Pricing & Purchase | `[lpc_pricing]` cards + lead form fallback |
+| `how-it-works` | How It Works | Detailed 3-step process + example questions + support hours |
+| `faq` | FAQ | Comprehensive FAQ using HTML `<details>` elements |
+| `contact` | Contact & Support | Contact cards + lead form |
+| `terms` | Terms of Service | Placeholder legal text |
+| `privacy-policy-loverspick` | Privacy Policy | Placeholder legal text |
+| `byeolgram-road` | Byeolgram Road | Partner directory `[lpc_partners]` + apply form `[lpc_partner_apply_form]` |
+
+## Shortcodes
+
+| Shortcode | Purpose |
+|-----------|---------|
+| `[lpc_pricing]` | Pricing cards (3/5/7-day + premium add-on) |
+| `[lpc_lead_form]` | Lead capture form with UTM tracking (`style="compact"` variant) |
+| `[lpc_partners]` | Partner directory with category/area filter tabs |
+| `[lpc_partner_apply_form]` | Partner application form |
+| `[lpc_cta_telegram]` | Telegram CTA button (text customizable via `text` attribute) |
+| `[lpc_cta_whatsapp]` | WhatsApp CTA button |
+
+## Custom Post Type: `lpc_partner`
+
+Used for Byeolgram Road partner listings.
+
+**Taxonomies:** `lpc_partner_cat` (Stay/Restaurant), `lpc_partner_area` (Hongdae/Myeongdong/Gangnam/Itaewon/Seongsu)
+
+**Meta fields:**
+| Key | Type | Description |
+|-----|------|-------------|
+| `_lpc_short_desc` | textarea | Why it's good for foreigners |
+| `_lpc_benefits` | textarea | Exclusive benefits (NO discount language) |
+| `_lpc_languages` | array | Supported languages (EN/JP/KR/CN) |
+| `_lpc_map_link` | url | Google Maps link |
+| `_lpc_contact_link` | url | Reservation/contact URL |
+| `_lpc_featured` | checkbox | Featured partner toggle |
+
+## Custom Database Tables
+
+### `{prefix}lpc_leads`
+Stores lead form submissions with UTM tracking.
+
+### `{prefix}lpc_partner_apps`
+Stores partner application form submissions.
+
+## WordPress Options
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `lpc_telegram_link` | (empty) | Telegram chat link for CTAs |
+| `lpc_whatsapp_link` | (empty) | WhatsApp link for CTAs |
+| `lpc_admin_email` | admin email | Notification email for leads |
+| `lpc_currency` | $ | Currency symbol |
+| `lpc_price_3day` | 29 | 3-day pass price |
+| `lpc_price_5day` | 39 | 5-day pass price |
+| `lpc_price_7day` | 49 | 7-day pass price |
+| `lpc_price_premium` | 15 | Premium add-on price |
+| `lpc_checkout_3day` | (empty) | Checkout URL (empty = lead form fallback) |
+| `lpc_checkout_5day` | (empty) | Checkout URL |
+| `lpc_checkout_7day` | (empty) | Checkout URL |
+| `lpc_ga4_id` | (empty) | Google Analytics 4 Measurement ID |
+| `lpc_meta_pixel_id` | (empty) | Meta Pixel ID |
+
+## REST API
+
+Namespace: `/wp-json/loverspick/v1/`
+
+| Method | Endpoint | Auth | Purpose |
+|--------|----------|------|---------|
+| POST | `/lead` | Public | Lead form submission |
+| POST | `/partner-apply` | Public | Partner application submission |
+
+## Admin Pages
+
+| Page | Slug | Purpose |
+|------|------|---------|
+| Settings | `loverspick` | Tabbed settings: General / Pricing / Analytics |
+| Leads | `loverspick-leads` | Lead submissions viewer with stats |
+| Partner Apps | `loverspick-partner-apps` | Partner application viewer |
+
+Partners are managed via the standard WP post editor: **Partners** menu in admin sidebar.
+
+## Design System
+
+CSS custom properties in `public/css/loverspick.css`:
+- Primary: `#E85D75` (romantic coral)
+- Dark: `#1A1A2E`
+- Background: `#FAFAF9`
+- Gold accent: `#FFB347`
+- All classes scoped to `lpc-*` prefix
+- Mobile-first with breakpoint at 768px
+- Floating Telegram CTA on mobile
