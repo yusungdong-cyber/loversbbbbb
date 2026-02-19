@@ -7,24 +7,39 @@
 (function ($) {
     'use strict';
 
-    var api = (window.lpcData && window.lpcData.apiUrl) || '/wp-json/loverspick/v1';
+    var api = ((window.lpcData && window.lpcData.apiUrl) || '/wp-json/loverspick/v1').replace(/\/+$/, '');
     var nonce = (window.lpcData && window.lpcData.nonce) || '';
     var telegramLink = (window.lpcData && window.lpcData.telegramLink) || '';
 
-    /* ── UTM Capture ────────────────────────────────────────── */
+    /* ── UTM Capture (persists across pages via sessionStorage) */
 
     function getUtmParams() {
         var params = {};
         var search = window.location.search;
-        if (!search) return params;
-        var pairs = search.substring(1).split('&');
-        for (var i = 0; i < pairs.length; i++) {
-            var kv = pairs[i].split('=');
-            var key = decodeURIComponent(kv[0]);
-            if (key.indexOf('utm_') === 0) {
-                params[key] = decodeURIComponent(kv[1] || '');
+        if (search) {
+            var pairs = search.substring(1).split('&');
+            for (var i = 0; i < pairs.length; i++) {
+                var kv = pairs[i].split('=');
+                var key = decodeURIComponent(kv[0]);
+                if (key.indexOf('utm_') === 0) {
+                    params[key] = decodeURIComponent(kv[1] || '');
+                }
             }
         }
+
+        // Store UTMs in sessionStorage on first landing.
+        if (Object.keys(params).length > 0) {
+            try { sessionStorage.setItem('lpc_utm', JSON.stringify(params)); } catch (e) { /* noop */ }
+        }
+
+        // Fall back to stored UTMs if none in current URL.
+        if (Object.keys(params).length === 0) {
+            try {
+                var stored = sessionStorage.getItem('lpc_utm');
+                if (stored) { params = JSON.parse(stored); }
+            } catch (e) { /* noop */ }
+        }
+
         return params;
     }
 

@@ -4,10 +4,14 @@
 (function ($) {
 	'use strict';
 
-	// Confirmation for destructive actions.
-	$(document).on('click', 'button[name="action_type"][value="block"]', function (e) {
-		if (!confirm('このユーザーをブロックしますか？')) {
-			e.preventDefault();
+	// Confirmation for block action.
+	$(document).on('submit', 'form', function (e) {
+		var $form = $(this);
+		var action = $form.find('input[name="action_type"]').val();
+		if ('block' === action) {
+			if (!confirm('このユーザーをブロックしますか？')) {
+				e.preventDefault();
+			}
 		}
 	});
 

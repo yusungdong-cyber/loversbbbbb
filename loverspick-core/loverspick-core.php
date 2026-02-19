@@ -106,7 +106,17 @@ function lpc_enqueue_assets() {
 add_action( 'admin_enqueue_scripts', 'lpc_admin_assets' );
 
 function lpc_admin_assets( $hook ) {
-    if ( strpos( $hook, 'loverspick' ) === false ) {
+    // Load on LoversPick settings pages and on the Partners CPT editor.
+    $is_lpc_page = ( strpos( $hook, 'loverspick' ) !== false );
+    $is_partner_edit = false;
+    if ( in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+        $screen = get_current_screen();
+        if ( $screen && 'lpc_partner' === $screen->post_type ) {
+            $is_partner_edit = true;
+        }
+    }
+
+    if ( ! $is_lpc_page && ! $is_partner_edit ) {
         return;
     }
     wp_enqueue_style(

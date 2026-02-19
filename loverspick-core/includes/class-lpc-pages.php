@@ -37,7 +37,7 @@ class LPC_Pages {
                 'post_content' => $data['content'],
                 'post_status'  => 'publish',
                 'post_type'    => 'page',
-                'post_author'  => 1,
+                'post_author'  => get_current_user_id() ? get_current_user_id() : 1,
             ) );
         }
     }
@@ -446,7 +446,7 @@ class LPC_Pages {
     private static function terms_content() {
         return '<div class="lpc-section lpc-legal">
 <h1>Terms of Service</h1>
-<p><em>Last updated: [DATE]</em></p>
+<p><em>Last updated: ' . gmdate( 'F j, Y' ) . '</em></p>
 
 <h2>1. Service Description</h2>
 <p>LoversPick provides real-time travel assistance for visitors to Seoul, South Korea, through messaging platforms (Telegram, WhatsApp). Our service connects you with local Korean guides who provide information, recommendations, and assistance during your trip.</p>
@@ -489,7 +489,7 @@ class LPC_Pages {
     private static function privacy_content() {
         return '<div class="lpc-section lpc-legal">
 <h1>Privacy Policy</h1>
-<p><em>Last updated: [DATE]</em></p>
+<p><em>Last updated: ' . gmdate( 'F j, Y' ) . '</em></p>
 
 <h2>1. Information We Collect</h2>
 <p>We collect information you provide directly:</p>

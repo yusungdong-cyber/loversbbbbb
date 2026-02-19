@@ -62,14 +62,9 @@ class LPC_Settings {
 
     public static function register_settings() {
         // General settings.
-        $general = array(
-            'lpc_telegram_link',
-            'lpc_whatsapp_link',
-            'lpc_admin_email',
-        );
-        foreach ( $general as $opt ) {
-            register_setting( 'lpc_settings_general', $opt, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-        }
+        register_setting( 'lpc_settings_general', 'lpc_telegram_link', array( 'sanitize_callback' => 'esc_url_raw' ) );
+        register_setting( 'lpc_settings_general', 'lpc_whatsapp_link', array( 'sanitize_callback' => 'esc_url_raw' ) );
+        register_setting( 'lpc_settings_general', 'lpc_admin_email', array( 'sanitize_callback' => 'sanitize_email' ) );
 
         // Pricing settings.
         $pricing = array(
